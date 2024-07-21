@@ -62,6 +62,9 @@ if (session_status() === PHP_SESSION_NONE) {
                         <a class="nav-link nav-link custom-nav-link" href="./order_confirmation.php">Orders</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link nav-link custom-nav-link" href="./manage_profile.php">Profile</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="./auth/logout.php" class="btn btn-danger">Logout</a>
                     </li>
                 <?php else: ?>

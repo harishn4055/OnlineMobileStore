@@ -10,25 +10,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $conn->real_escape_string($_POST['password']);
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    // Check if user or email exists
     $checkUser = $conn->prepare("SELECT * FROM users WHERE username=? OR email=?");
     $checkUser->bind_param("ss", $username, $email);
     $checkUser->execute();
     $result = $checkUser->get_result();
     if ($result->num_rows > 0) {
-        echo "Username or Email already exists.";
+        $_SESSION['error'] = "Username or Email already exists.";
     } else {
         $stmt = $conn->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)");
         $stmt->bind_param("sss", $username, $hashed_password, $email);
         if ($stmt->execute()) {
-            echo "Registration successful!";
+            $_SESSION['message'] = "Registration successful!";
         } else {
-            echo "Error: " . $stmt->error;
+            $_SESSION['error'] = "Error: " . $stmt->error;
         }
         $stmt->close();
     }
     $checkUser->close();
     $conn->close();
+    header("Location: register.php"); // Redirect to the same page to show the message
+    exit();
 }
 ?>
 
@@ -45,6 +46,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
 <div class="container mt-5">
+    <?php
+    if (isset($_SESSION['message'])) {
+        echo "<div class='alert alert-success'>" . $_SESSION['message'] . "</div>";
+        unset($_SESSION['message']);
+    }
+    if (isset($_SESSION['error'])) {
+        echo "<div class='alert alert-danger'>" . $_SESSION['error'] . "</div>";
+        unset($_SESSION['error']);
+    }
+    ?>
     <h1 class="mb-3">Register</h1>
     <form action="register.php" method="post" class="needs-validation" novalidate>
         <div class="form-group">
@@ -62,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <button type="submit" class="btn btn-primary">Register</button>
     </form>
 </div>
-<br><br><br><br>
-<?php include '../includes/footer.php'; ?> <!-- Ensure this path is correct -->
+
+<?php include '../includes/footer.php'; ?>
 </body>
 </html>

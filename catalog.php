@@ -27,7 +27,7 @@ include 'includes/db.php';
                             <div class="card-body">
                                 <h5 class="card-title">' . htmlspecialchars($row["name"]) . '</h5>
                                 <p class="card-text">$' . number_format($row["price"], 2) . '</p>
-                                <a href="auth/login.php" class="btn btn-primary">View Details</a>
+                                <a class="btn btn-primary" href="product_detail.php?id=' . htmlspecialchars($row['id']) . '">View Details</a>
                             </div>
                         </div>
                       </div>';
@@ -38,6 +38,7 @@ include 'includes/db.php';
         $conn->close();
         ?>
     </div>
+</div>
 </div>
 </body>
 <?php include 'includes/footer.php'; ?>

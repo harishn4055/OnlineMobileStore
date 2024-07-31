@@ -14,10 +14,14 @@ $message = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $conn->real_escape_string($_POST['username']);
     $email = $conn->real_escape_string($_POST['email']);
+    $firstname = $conn->real_escape_string($_POST['firstname']);
+    $lastname = $conn->real_escape_string($_POST['lastname']);
+    $phone = $conn->real_escape_string($_POST['phone']);
     $user_id = $_SESSION['user_id'];
 
-    $stmt = $conn->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
-    $stmt->bind_param("ssi", $username, $email, $user_id);
+    // Update query including all fields
+    $stmt = $conn->prepare("UPDATE users SET username = ?, email = ?, firstname = ?, lastname = ?, phone = ? WHERE id = ?");
+    $stmt->bind_param("sssssi", $username, $email, $firstname, $lastname, $phone, $user_id);
     if ($stmt->execute()) {
         $message = "<div class='alert alert-success'>Profile updated successfully!</div>";
     } else {
@@ -27,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Fetching user data to display
-$stmt = $conn->prepare("SELECT username, email FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT username, email, firstname, lastname, phone FROM users WHERE id = ?");
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -50,7 +54,7 @@ $conn->close();
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-<div class="container">
+<div class="container mt-5">
     <h1>Edit Profile</h1>
     <?php echo $message; ?>
     <form action="manage_profile.php" method="post" class="needs-validation" novalidate>
@@ -61,6 +65,18 @@ $conn->close();
         <div class="form-group">
             <label for="email">Email:</label>
             <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+        </div>
+        <div class="form-group">
+            <label for="firstname">First Name:</label>
+            <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo htmlspecialchars($user['firstname']); ?>" required>
+        </div>
+        <div class="form-group">
+            <label for="lastname">Last Name:</label>
+            <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo htmlspecialchars($user['lastname']); ?>" required>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone Number:</label>
+            <input type="text" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>" required>
         </div>
         <button type="submit" class="btn btn-primary">Update Profile</button>
         <a href="change_password.php" class="btn btn-primary">Change Password</a>

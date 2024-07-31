@@ -62,6 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['place_order'])) {
         echo "<script>alert('Thank you for your order, $name! Your order has been placed successfully.'); window.location.href='order_confirmation.php';</script>";
         exit();
     }
+    elseif ($paymentType === 'card') {
+        echo "<script>alert('Online payments are under development, please use Cash On Delivery'); window.location.href='checkout.php';</script>";
+        exit();
+    }
 }
 ?>
 <!DOCTYPE html>

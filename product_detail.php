@@ -1,6 +1,8 @@
 <?php
+session_start();
 require_once 'includes/db.php'; // Ensure the database connection is included
 include 'includes/header1.php'; // Ensure this path is correct and file exists
+
 // Check for an id in the query string
 if (isset($_GET['id'])) {
     $productId = $_GET['id'];
@@ -43,7 +45,6 @@ if (isset($_GET['id'])) {
             height: auto;
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-       
         }
         .details {
             background: #f8f9fa;
@@ -71,20 +72,24 @@ if (isset($_GET['id'])) {
     <h1><?php echo htmlspecialchars($product['name']); ?></h1>
     <div class="row">
         <div class="col-md-6 mb-4">
-        <div class="image-container">
-            <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="image img-fluid">
-        </div>
+            <div class="image-container">
+                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="image img-fluid">
+            </div>
         </div>
         <div class="col-md-6 details">
             <p><?php echo nl2br(htmlspecialchars($product['description'])); ?></p>
             <p class="price-tag">$<?php echo number_format($product['price'], 2); ?></p>
             <p class="stock-info"><?php echo $product['stock'] > 0 ? 'In Stock' : 'Out of Stock'; ?></p>
             <?php if ($product['stock'] > 0): ?>
-                <form action="cart.php" method="post">
-                    <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
-                    <input type="number" name="quantity" value="1" min="1" max="<?php echo $product['stock']; ?>" class="form-control" style="width: 100px;">
-                    <button type="submit" name="add_to_cart" class="btn btn-primary mt-3">Add to Cart</button>
-                </form>
+                <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
+                    <form action="cart.php" method="post">
+                        <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                        <input type="number" name="quantity" value="1" min="1" max="<?php echo $product['stock']; ?>" class="form-control" style="width: 100px;">
+                        <button type="submit" name="add_to_cart" class="btn btn-primary mt-3">Add to Cart</button>
+                    </form>
+                <?php else: ?>
+                    <a href="auth/login.php" class="btn btn-primary mt-3">Add to Cart</a>
+                <?php endif; ?>
             <?php else: ?>
                 <button class="btn btn-secondary disabled">Out of Stock</button>
             <?php endif; ?>

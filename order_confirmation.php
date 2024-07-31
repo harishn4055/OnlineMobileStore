@@ -16,7 +16,6 @@ $stmt = $conn->prepare("SELECT o.id, o.status, o.order_date, p.name, p.price, o.
 $stmt->bind_param("i", $userId);
 $stmt->execute();
 $result = $stmt->get_result();
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,6 +40,7 @@ $result = $stmt->get_result();
                     <th>Total Price</th>
                     <th>Status</th>
                     <th>Order Date</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,6 +53,13 @@ $result = $stmt->get_result();
                     <td>$<?= number_format($row['total_price'], 2) ?></td>
                     <td><?= htmlspecialchars($row['status']) ?></td>
                     <td><?= date('F d, Y', strtotime($row['order_date'])) ?></td>
+                    <td>
+                        <?php if ($row['status'] != 'canceled'): ?>
+                        <button class="btn btn-danger btn-sm cancel-order-btn" data-order-id="<?= $row['id'] ?>" data-toggle="modal" data-target="#cancelModal">Cancel</button>
+                        <?php else: ?>
+                        <span class="text-muted">Canceled</span>
+                        <?php endif; ?>
+                    </td>
                 </tr>
                 <?php endwhile; ?>
             </tbody>
@@ -63,9 +70,48 @@ $result = $stmt->get_result();
     <?php endif; ?>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="cancelForm" method="post" action="cancel_order.php">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel">Cancel Order</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="order_id" id="order_id">
+                    <div class="form-group">
+                        <label for="cancel_reason">Reason for Cancellation</label>
+                        <textarea class="form-control" id="cancel_reason" name="cancel_reason" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.cancel-order-btn').on('click', function() {
+        var orderId = $(this).data('order-id');
+        $('#order_id').val(orderId);
+    });
+
+    $('#cancelForm').on('submit', function(event) {
+        alert('Your cancellation is in progress. Our team will get back to you in 24hrs.');
+    });
+});
+</script>
 </body>
 </html>
 

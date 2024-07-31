@@ -35,9 +35,6 @@ if ($currentPage == 'login.php' || $currentPage == 'register.php') {
             <li><a href="<?php echo $basePath; ?>catalog.php">Catalog</a></li>
             <li><a href="<?php echo $basePath; ?>auth/login.php">Login</a></li>
             <li><a href="<?php echo $basePath; ?>auth/register.php">Sign up</a></li>
-            <li><a href="<?php echo $basePath; ?>admin_login.php">Admin Login</a></li>
-
-            
         </ul>
     </div>
 </header>

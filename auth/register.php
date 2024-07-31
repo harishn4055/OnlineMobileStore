@@ -4,29 +4,52 @@ include '../includes/header.php'; // Include the common header to maintain consi
 
 session_start();
 
+function validateEmail($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
+}
+
+function validatePassword($password) {
+    return preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/', $password);
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $conn->real_escape_string($_POST['username']);
-    $email = $conn->real_escape_string($_POST['email']);
-    $password = $conn->real_escape_string($_POST['password']);
+    $username = trim($conn->real_escape_string($_POST['username']));
+    $email = trim($conn->real_escape_string($_POST['email']));
+    $password = trim($conn->real_escape_string($_POST['password']));
+    $firstname = trim($conn->real_escape_string($_POST['firstname']));
+    $lastname = trim($conn->real_escape_string($_POST['lastname']));
+    $phone = trim($conn->real_escape_string($_POST['phone']));
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    $checkUser = $conn->prepare("SELECT * FROM users WHERE username=? OR email=?");
-    $checkUser->bind_param("ss", $username, $email);
-    $checkUser->execute();
-    $result = $checkUser->get_result();
-    if ($result->num_rows > 0) {
-        $_SESSION['error'] = "Username or Email already exists.";
+    // Validate inputs
+    if (empty($username) || empty($email) || empty($password) || empty($firstname) || empty($lastname) || empty($phone)) {
+        $_SESSION['error'] = "All fields are required.";
+    } elseif (!validateEmail($email)) {
+        $_SESSION['error'] = "Invalid email format.";
+    } elseif (!validatePassword($password)) {
+        $_SESSION['error'] = "Password must be at least 8 characters long, contain at least one uppercase letter, one number, and one special character.";
+    } elseif (!ctype_digit($phone)) {
+        $_SESSION['error'] = "Phone number should contain only numeric values.";
     } else {
-        $stmt = $conn->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $username, $hashed_password, $email);
-        if ($stmt->execute()) {
-            $_SESSION['message'] = "Registration successful!";
+        // Check if the username or email already exists
+        $checkUser = $conn->prepare("SELECT * FROM users WHERE username=? OR email=?");
+        $checkUser->bind_param("ss", $username, $email);
+        $checkUser->execute();
+        $result = $checkUser->get_result();
+        if ($result->num_rows > 0) {
+            $_SESSION['error'] = "Username or Email already exists.";
         } else {
-            $_SESSION['error'] = "Error: " . $stmt->error;
+            $stmt = $conn->prepare("INSERT INTO users (username, password, email, firstname, lastname, phone) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssss", $username, $hashed_password, $email, $firstname, $lastname, $phone);
+            if ($stmt->execute()) {
+                $_SESSION['message'] = "Registration successful!";
+            } else {
+                $_SESSION['error'] = "Error: " . $stmt->error;
+            }
+            $stmt->close();
         }
-        $stmt->close();
+        $checkUser->close();
     }
-    $checkUser->close();
     $conn->close();
     header("Location: register.php"); // Redirect to the same page to show the message
     exit();
@@ -69,6 +92,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="form-group">
             <label for="password">Password:</label>
             <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label for="firstname">First Name:</label>
+            <input type="text" class="form-control" id="firstname" name="firstname" required>
+        </div>
+        <div class="form-group">
+            <label for="lastname">Last Name:</label>
+            <input type="text" class="form-control" id="lastname" name="lastname" required>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone Number:</label>
+            <input type="text" class="form-control" id="phone" name="phone" required>
         </div>
         <button type="submit" class="btn btn-primary">Register</button>
     </form>
